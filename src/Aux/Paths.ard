@@ -1,3 +1,6 @@
 \import Paths
 
 \func coeR (A : I -> \Type) (a : A right) (i : I) : A i => coe A (transport A (coe (__ = left) idp right) a) i
+
+\func funExt2 {A : \Type} {B : A -> \Type} (C : \Pi (a : A) -> (B a) -> \Type) (f g : \Pi (x : A) (y : B x) -> C x y) (eq : \Pi (x : A) (y : B x) -> (f x y = g x y)) : f = g =>
+  path (\lam i x y => eq x y @ i)

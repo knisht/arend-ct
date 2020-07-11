@@ -1,4 +1,5 @@
 \import Category
+\import Equiv (Equiv, QEquiv)
 \open Precat
 \import Paths
 \import Aux.Paths
@@ -26,12 +27,6 @@
   | functor-id a => funExt (\lam _ => Hom x a) (A.o (A.id a)) (\lam x'' => x'') id-right
   | functor-hom {a} {b} {c} f g => funExt (\lam _ => Hom x c) (A.o (A.o g f)) (\lam x1 => A.o g (A.o f x1)) (\lam x1 => inv (o-assoc-rev g f x1))
 }
-
-\func Yoneda {X : \Type}
-             {A : Precat X}
-             (F : Functor A SetCat)
-             (a : X) :
-  F.map a = (Hom {(FunctorCategory A SetCat)} F (HomFunctor A a)) => {?}
 
 \record NaturalTransformation {X Y : \Type} {A : Precat X} {B : Precat Y} (F G : Functor A B) {
   | component (x : X) : B.Hom (F.map x) (G.map x)
@@ -76,17 +71,54 @@
     | component x => B.o-assoc (nat-fg.component x) (nat-gh.component x) (nat-hw.component x) @ i
     | nat-coherence {x} {y} f =>
       coe (\lam j => (B.o-assoc (nat-fg.component y) (nat-gh.component y) (nat-hw.component y) @ j) `o` (F.arrow-map f) = (W.arrow-map f) `o` (B.o-assoc (nat-fg.component x) (nat-gh.component x) (nat-hw.component x) @ j))
-          ((nat-hw.component y `o` (nat-gh.component y `o` nat-fg.component y)) `o` F.arrow-map f ==< inv (o-assoc-rev (component y) (component y `o` component y) (F.arrow-map f)) >==
-          nat-hw.component y `o` ((nat-gh.component y `o` nat-fg.component y) `o` F.arrow-map f) ==< pmap (component y `o`) (inv (o-assoc-rev (component y) (component y) (arrow-map f))) >==
-          nat-hw.component y `o` (nat-gh.component y `o` (nat-fg.component y `o` F.arrow-map f)) ==< pmap (component y `o` (component y `o` __)) (nat-coherence f) >==
-          nat-hw.component y `o` (nat-gh.component y `o` (G.arrow-map f `o` nat-fg.component x)) ==< pmap (component y `o`) (o-assoc-rev (component y) (G.arrow-map f) (component x)) >==
-          nat-hw.component y `o` ((nat-gh.component y `o` G.arrow-map f) `o` nat-fg.component x) ==< pmap (component y `o` (__ `o` component x)) (nat-coherence f) >==
-          nat-hw.component y `o` ((H.arrow-map f `o` nat-gh.component x) `o` nat-fg.component x) ==< o-assoc-rev (component y) (H.arrow-map f `o` component x) (component x) >==
-          (nat-hw.component y `o` (H.arrow-map f `o` nat-gh.component x)) `o` nat-fg.component x ==< pmap (`o` component x) (o-assoc-rev (component y) (H.arrow-map f) (component x))>==
-          ((nat-hw.component y `o` H.arrow-map f) `o` nat-gh.component x) `o` nat-fg.component x ==< pmap ((__ `o` component x)`o` component x) (nat-coherence f) >==
-          ((W.arrow-map f `o` nat-hw.component x) `o` nat-gh.component x) `o` nat-fg.component x ==< pmap (`o` component x) (inv (o-assoc-rev (arrow-map f) (component x) (component x))) >==
-          (W.arrow-map f `o` (nat-hw.component x `o` nat-gh.component x)) `o` nat-fg.component x ==< inv (o-assoc-rev (arrow-map f) (component x `o` component x) (component x)) >==
-          W.arrow-map f `o` ((nat-hw.component x `o` nat-gh.component x) `o` nat-fg.component x) ==< pmap (arrow-map f `o`) (inv (o-assoc-rev (component x) (component x) (component x))) >==
-          W.arrow-map f `o` (nat-hw.component x `o` (nat-gh.component x `o` nat-fg.component x)) `qed)
+          ((nat-hw.component y `o` (nat-gh.component y `o` nat-fg.component y)) `o` F.arrow-map f ==< inv (o-assoc-rev (component y) (component y `o` component y) (F.arrow-map f))        >==
+          nat-hw.component y `o` ((nat-gh.component y `o` nat-fg.component y) `o` F.arrow-map f)  ==< pmap (component y `o`) (inv (o-assoc-rev (component y) (component y) (arrow-map f))) >==
+          nat-hw.component y `o` (nat-gh.component y `o` (nat-fg.component y `o` F.arrow-map f))  ==< pmap (component y `o` (component y `o` __)) (nat-coherence f)                        >==
+          nat-hw.component y `o` (nat-gh.component y `o` (G.arrow-map f `o` nat-fg.component x))  ==< pmap (component y `o`) (o-assoc-rev (component y) (G.arrow-map f) (component x))     >==
+          nat-hw.component y `o` ((nat-gh.component y `o` G.arrow-map f) `o` nat-fg.component x)  ==< pmap (component y `o` (__ `o` component x)) (nat-coherence f)                        >==
+          nat-hw.component y `o` ((H.arrow-map f `o` nat-gh.component x) `o` nat-fg.component x)  ==< o-assoc-rev (component y) (H.arrow-map f `o` component x) (component x)              >==
+          (nat-hw.component y `o` (H.arrow-map f `o` nat-gh.component x)) `o` nat-fg.component x  ==< pmap (`o` component x) (o-assoc-rev (component y) (H.arrow-map f) (component x))     >==
+          ((nat-hw.component y `o` H.arrow-map f) `o` nat-gh.component x) `o` nat-fg.component x  ==< pmap ((__ `o` component x)`o` component x) (nat-coherence f)                         >==
+          ((W.arrow-map f `o` nat-hw.component x) `o` nat-gh.component x) `o` nat-fg.component x  ==< pmap (`o` component x) (inv (o-assoc-rev (arrow-map f) (component x) (component x))) >==
+          (W.arrow-map f `o` (nat-hw.component x `o` nat-gh.component x)) `o` nat-fg.component x  ==< inv (o-assoc-rev (arrow-map f) (component x `o` component x) (component x))          >==
+          W.arrow-map f `o` ((nat-hw.component x `o` nat-gh.component x) `o` nat-fg.component x)  ==< pmap (arrow-map f `o`) (inv (o-assoc-rev (component x) (component x) (component x))) >==
+          W.arrow-map f `o` (nat-hw.component x `o` (nat-gh.component x `o` nat-fg.component x))  `qed)
           i
   })
+
+\func Yoneda {X : \Type}
+             {A : Precat X}
+             (F : Functor A SetCat)
+             (a : X) :
+  QEquiv {F.map a} {(Hom {(FunctorCategory A SetCat)} (HomFunctor A a) F)} => \new QEquiv {
+  | f image => \new NaturalTransformation {
+    | component x homa => F.arrow-map homa image
+    | nat-coherence {x1} {y1} f =>
+      funExt (\lam _ => F.map y1)
+             (\lam x1 => F.arrow-map (A.o f x1) image)
+             (\lam x1 => F.arrow-map f (F.arrow-map x1 image))
+             (\lam x => path (\lam i => ((F.functor-hom x f) @ i) image))
+  }
+  | ret (nat : NaturalTransformation) => nat.component a (id a)
+  | ret_f x => path (\lam i => ((F.functor-id a) @ i) x)
+  | f_sec (nat : NaturalTransformation) =>
+    \let r : (\lam x homa => F.arrow-map homa (nat.component a (A.id a))) = {\Pi (x : X) (A.Hom a x) -> (F.map x) } nat.component =>
+           funExt2 {X} {Hom a} (\lam x y => F.map x) (\lam x homa => F.arrow-map {_} {x} homa (nat.component a (A.id a))) nat.component
+                   (\lam x y =>
+                       F.arrow-map y (nat.component a (A.id a)) ==< inv (pmap (__ (A.id a)) (nat.nat-coherence y)) >==
+                       nat.component x (y `o` (A.id a))         ==< pmap (nat.component x) (id-left y) >==
+                       nat.component x y                        `qed)
+    \in path (\lam i => \new NaturalTransformation {
+      | component => r @ i
+      | nat-coherence {x} {y} f =>
+        coeR (\lam j => (\lam x1 =>
+            (F.arrow-map (A.o f x1) (nat.component a (A.id a)) ==< inv (pmap (\lam p0 => p0 (A.id a)) (nat.nat-coherence (A.o f x1))) >==
+            nat.component y (A.o (A.o f x1) (A.id a))          ==< pmap (nat.component y) (A.id-left (A.o f x1)) >==
+            (nat.component y (A.o f x1))                       `qed) @ j)
+          = (\lam x1 =>
+            F.arrow-map f ((F.arrow-map x1 (nat.component a (A.id a)) ==< inv (pmap (\lam p0 => p0 (A.id a)) (nat.nat-coherence x1)) >==
+            nat.component x (A.o x1 (A.id a)) ==< pmap (nat.component x) (A.id-left x1) >==
+            (nat.component x x1) `qed) @ j)))
+             (pmap (\lam f x1 => f x1) (nat.nat-coherence f)) i
+    })
+}
