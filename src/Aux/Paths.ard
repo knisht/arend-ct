@@ -1,0 +1,3 @@
+\import Paths
+
+\func coeR (A : I -> \Type) (a : A right) (i : I) : A i => coe A (transport A (coe (__ = left) idp right) a) i
