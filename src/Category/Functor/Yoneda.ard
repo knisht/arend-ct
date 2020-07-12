@@ -1,0 +1,43 @@
+\import Aux.Paths
+\import Category.Functor
+\import Category
+\import Equiv (QEquiv)
+\import Paths
+\import Set.Category
+
+\func Yoneda {X : \Type}
+             {A : Precat X}
+             (F : Functor A SetCat)
+             (a : X) :
+  QEquiv {F.map a} {Hom {FunctorCategory A SetCat} (HomFunctor A a) F} => \new QEquiv {
+  | f image => \new NaturalTransformation {
+    | component x (homa : Hom a x) => F.arrow-map homa image
+    | naturality {x1} {y1} f =>
+      funExt (\lam _ => F.map y1)
+             (\lam x1 => F.arrow-map (A.o f x1) image)
+             (\lam x1 => F.arrow-map f (F.arrow-map x1 image))
+             (\lam x => path (\lam i => ((F.functor-hom x f) @ i) image))
+  }
+  | ret (nat : NaturalTransformation) => nat.component a (id a)
+  | ret_f x => path (\lam i => ((F.functor-id a) @ i) x)
+  | f_sec (nat : NaturalTransformation) =>
+    \let r : (\lam x homa => F.arrow-map homa (nat.component a (A.id a))) = {\Pi (x : X) (A.Hom a x) -> (F.map x) } nat.component =>
+           funExt2 {X} {Hom a} (\lam x y => F.map x) (\lam x homa => F.arrow-map {_} {x} homa (nat.component a (A.id a))) nat.component
+                   (\lam x y =>
+                       F.arrow-map y (nat.component a (A.id a)) ==< inv (pmap (__ (A.id a)) (nat.naturality y)) >==
+                       nat.component x (y `o` (A.id a))         ==< pmap (nat.component x) (id-left y)          >==
+                       nat.component x y                        `qed)
+    \in path (\lam i => \new NaturalTransformation {
+      | component => r @ i
+      | naturality {x} {y} f =>
+        coeR (\lam j => (\lam x1 =>
+            (F.arrow-map (A.o f x1) (nat.component a (A.id a)) ==< inv (pmap (\lam p0 => p0 (A.id a)) (nat.naturality (A.o f x1))) >==
+            nat.component y (A.o (A.o f x1) (A.id a))          ==< pmap (nat.component y) (A.id-left (A.o f x1))                   >==
+            (nat.component y (A.o f x1))                       `qed) @ j)
+          = (\lam x1 =>
+            F.arrow-map f ((F.arrow-map x1 (nat.component a (A.id a)) ==< inv (pmap (\lam p0 => p0 (A.id a)) (nat.naturality x1)) >==
+            nat.component x (A.o x1 (A.id a)) ==< pmap (nat.component x) (A.id-left x1)                                           >==
+            (nat.component x x1) `qed) @ j)))
+             (pmap (\lam f x1 => f x1) (nat.naturality f)) i
+    })
+}
