@@ -1,0 +1,40 @@
+\import Category
+\import Category.Functor
+\import Category.Functor.Instances
+\import Category.Instances
+\import Category.Limits
+\import Logic
+\import Paths
+\import Playground
+\import Set.Category
+
+\func Product (C : Precat) (a b : C) : \Type => Limit {CatTwo} (TwoFunctor C a b)
+
+\func SetCatProduct (a b : \Set) : Product SetCat a b => \new Limit {
+  | cone => \new Cone {
+    | apex => \Sigma a b
+    | edge x s => \case \elim x \with {
+      | one => s.1
+      | two => s.2
+    }
+    | coherence {a1} {b1} f => \case \elim a1, \elim b1, \elim f \with {
+      | one, one, f => idp
+      | one, two, ()
+      | two, one, ()
+      | two, two, f => idp
+    }
+  }
+  | factors-all (other : Cone) => \new ConesFactorization {
+    | transit ap => (other.edge one ap, other.edge two ap)
+    | commute x => \case \elim x \with {
+      | one => idp
+      | two => idp
+    }
+    | unique arrow f =>
+      funExt (\lam _ => (\Sigma a b))
+             arrow
+             (\lam ap => (other.edge one ap, other.edge two ap))
+             (\lam x => SigmaExt (\lam _ => b) (arrow x) ((other.edge one x, other.edge two x))
+                                 (pmap (__ x) (inv (f one))) (pmap (__ x) (inv (f two))))
+  }
+}

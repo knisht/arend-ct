@@ -1,0 +1,25 @@
+\import Category
+\import Category.Functor
+\import Category.Instances
+\import Paths
+
+\func TwoFunctor (C : Precat) (x y : C) : Functor CatTwo C => \new Functor {
+  | map a => \case \elim a \with {
+    | one => x
+    | two => y
+  }
+  | arrow-map {a} {b} f => \case \elim a, \elim b, \elim f \with {
+    | one, one, f => id x
+    | two, two, f => id y
+  }
+  | functor-id a => \case \elim a \with {
+    | one => idp
+    | two => idp
+  }
+  | functor-hom {a} {b} {c} f g => \case \elim a, \elim b, \elim c, \elim f, \elim g \with {
+    | one, one, one, f, g => inv (id-left (id x))
+    | one, two, one, g, ()
+    | two, one, one, (), _
+    | two, two, two, f, g => inv (id-left (id y))
+  }
+}

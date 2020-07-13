@@ -1,0 +1,28 @@
+\import Category
+\import Category.Functor
+\import Logic
+\import Paths
+\import Playground
+\import Set.Category
+
+\func Diagram (J : Precat) (C : Precat) : \Type => Functor J C
+
+\record Cone {J : Precat} {C : Precat} (D : Diagram J C) {
+  | apex : C
+  | edge : \Pi (x : J) -> Hom apex (D.map x)
+  | coherence {a b : J} (f : Hom a b) : edge b `factoredBy (edge a) (D.arrow-map f)
+}
+
+\record ConesFactorization {J C : Precat} (D : Diagram J C) (L U : Cone D) {
+  | transit : Hom L.apex U.apex
+  | commute : \Pi (x : J) -> (L.edge x) `factoredBy transit (U.edge x)
+  | unique : \Pi (arrow : Hom L.apex U.apex) -> (\Pi (x : J) -> L.edge x `factoredBy arrow  (U.edge x)) -> arrow = transit
+}
+
+\func \fix 1 factoredBy {C : Precat} {a b c : C} (l : Hom a c)  (arrow : Hom a b) (r : Hom b c) : \Type =>
+  l = r `o` arrow
+
+\record Limit {J C : Precat} (D : Diagram J C) {
+  | cone : Cone D
+  | factors-all : \Pi (other : Cone D) -> ConesFactorization D other cone
+}

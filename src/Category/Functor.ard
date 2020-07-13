@@ -1,8 +1,11 @@
 \import Category
+\import Category.Instances
 \import Equiv (Equiv, QEquiv)
+\import Logic
 \open Precat
 \import Paths
 \import Aux.Paths
+\import Playground
 \import Set.Category
 
 \record Functor {X Y : \Type} (A : Precat X) (B : Precat Y) {
@@ -26,6 +29,20 @@
   | arrow-map => o
   | functor-id a => funExt (\lam _ => Hom x a) (A.o (A.id a)) (\lam x'' => x'') id-right
   | functor-hom {a} {b} {c} f g => funExt (\lam _ => Hom x c) (A.o (A.o g f)) (\lam x1 => A.o g (A.o f x1)) (\lam x1 => inv (o-assoc-rev g f x1))
+}
+
+\func EmptyFunctor (D : Precat) : Functor EmptyCat D => \new Functor {
+  | map => absurd
+  | arrow-map => \lam x => absurd x
+  | functor-id => \lam x => absurd x
+  | functor-hom => \lam x => absurd x
+}
+
+\func ConstFunctor (D : Precat) (x : D) : Functor Singular D => \new Functor {
+  | map => \lam _ => x
+  | arrow-map => \lam _ => id x
+  | functor-id => \lam _ => idp
+  | functor-hom => \lam _ _ => inv (id-left (id x))
 }
 
 \record NaturalTransformation {X Y : \Type} {A : Precat X} {B : Precat Y} (F G : Functor A B) {

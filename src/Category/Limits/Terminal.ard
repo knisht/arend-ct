@@ -1,0 +1,28 @@
+\import Category
+\import Category.Functor
+\import Category.Instances
+\import Category.Limits
+\import Logic
+\import Category
+\import Category.Functor
+\import Logic
+\import Paths
+\import Playground
+\import Set.Category
+
+\func Terminal (C : Precat) : \Type => Limit {EmptyCat} (EmptyFunctor C)
+
+\func SetCatTerminal : Terminal SetCat => \new Limit {
+  | cone => \new Cone {
+    | apex => \Sigma
+    | edge => \lam x => absurd x
+    | coherence => \lam {x} => \case x \with {
+      | ()
+    }
+  }
+  | factors-all (other : Cone) => \new ConesFactorization {
+    | transit _ => ()
+    | commute => \lam x => absurd x
+    | unique arrow f => funExt (\lam _ => \Sigma) arrow (\lam _ => ()) (\lam _ => idp)
+  }
+}

@@ -1,0 +1,72 @@
+\import Category
+\import Category.Functor
+\import Data.Or
+\import Logic
+\import Paths
+\import Set.Category
+
+\instance Singular : Cat (\Sigma)
+  | Hom => \lam _ _ => \Sigma
+  | id => \lam _ => ()
+  | o => \lam _ _ => ()
+  | id-left => \lam a => \case \elim a \with {
+    | () => idp
+  }
+  | id-right =>  \lam a => \case \elim a \with {
+    | () => idp
+  }
+  | o-assoc => \lam _ _ _ => idp
+  | univalence => \lam {x} {y} f g p q => \case \elim x, \elim y, \elim f, \elim g \with {
+    | (), (), (), () => (idp, idp)
+  }
+
+\instance EmptyCat : Cat (Empty)
+  | Hom => \lam _ _ => Empty
+  | id => absurd
+  | o => \lam x => absurd x
+  | id-left => \lam x => absurd x
+  | id-right => \lam x => absurd x
+  | o-assoc => \lam x => absurd x
+  | univalence => \lam x => absurd x
+
+\data Two | one | two
+
+\instance CatTwo : Cat Two
+  | Hom => \lam a b => \case \elim a, \elim b \with {
+    | one, one => \Sigma
+    | one, two => Empty
+    | two, one => Empty
+    | two, two => \Sigma
+  }
+  | id => \lam x => \case \elim x \with {
+    | one => ()
+    | two => ()
+  }
+  | o {x} {y} {z} f g => \case \elim x, \elim y, \elim z, \elim f, \elim g \with {
+    | one, one, one, f, g => ()
+    | one, two, one, g, ()
+    | two, one, one, f, ()
+    | two, two, two, f, g => ()
+  }
+  | id-left {x} {y} f => \case \elim x, \elim y, \elim f \with {
+    | one, one, f => idp
+    | two, two, f => idp
+  }
+  | id-right {x} {y} f => \case \elim x, \elim y, \elim f \with {
+    | one, one, f => idp
+    | two, two, f => idp
+  }
+  | o-assoc {x} {y} {z} {w} h g f => \case \elim x, \elim y, \elim z, \elim w, \elim f, \elim g, \elim h \with {
+    | one, one, one, one, f, g, h => idp
+    | one, one, two, one, (), g, _
+    | one, two, one, one, f, h, ()
+    | one, two, two, one, h, g, ()
+    | two, one, one, one, f, g, ()
+    | two, one, two, one, h, g, ()
+    | two, two, one, one, f, (), _
+    | two, two, two, two, f, g, h => idp
+  }
+  | univalence {x} {y} f g p q => \case \elim x, \elim y, \elim f, \elim g, \elim p, \elim q \with {
+    | one, one, f, g, p, q => (idp, idp)
+    | two, two, f, g, p, q => (idp, idp)
+  }
