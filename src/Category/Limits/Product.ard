@@ -7,34 +7,36 @@
 \import Paths
 \import Playground
 \import Set.Category
+\import Set.Fin
 
-\func Product (C : Precat) (a b : C) : \Type => Limit {CatTwo} (TwoFunctor C a b)
+\func Product (C : Precat) (a b : C) : \Type => Limit {Discrete 2} (TwoFunctor C a b)
 
 \func SetCatProduct (a b : \Set) : Product SetCat a b => \new Limit {
   | cone => \new Cone {
     | apex => \Sigma a b
     | edge x s => \case \elim x \with {
-      | one => s.1
-      | two => s.2
+      | fzero => s.1
+      | fsuc fzero => s.2
+      | fsuc (fsuc ())
     }
     | coherence {a1} {b1} f => \case \elim a1, \elim b1, \elim f \with {
-      | one, one, f => idp
-      | one, two, ()
-      | two, one, ()
-      | two, two, f => idp
+      | fzero, fzero, f => idp
+      | fsuc fzero, fsuc fzero, f2 => idp
+      | fsuc (fsuc ()), b1, f1
     }
   }
   | factors-all (other : Cone) => \new ConesFactorization {
-    | transit ap => (other.edge one ap, other.edge two ap)
+    | transit ap => (other.edge fzero ap, other.edge (fsuc fzero) ap)
     | commute x => \case \elim x \with {
-      | one => idp
-      | two => idp
+      | fzero => idp
+      | fsuc fzero => idp
+      | fsuc (fsuc ())
     }
     | unique arrow f =>
       funExt (\lam _ => (\Sigma a b))
              arrow
-             (\lam ap => (other.edge one ap, other.edge two ap))
-             (\lam x => SigmaExt (\lam _ => b) (arrow x) ((other.edge one x, other.edge two x))
-                                 (pmap (__ x) (inv (f one))) (pmap (__ x) (inv (f two))))
+             (\lam ap => (other.edge fzero ap, other.edge (fsuc fzero) ap))
+             (\lam x => SigmaExt (\lam _ => b) (arrow x) ((other.edge fzero x, other.edge (fsuc fzero) x))
+                                 (pmap (__ x) (inv (f fzero))) (pmap (__ x) (inv (f (fsuc fzero)))))
   }
 }

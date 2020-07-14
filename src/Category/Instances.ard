@@ -4,6 +4,7 @@
 \import Logic
 \import Paths
 \import Set.Category
+\import Set.Fin
 
 \instance Singular : Cat (\Sigma)
   | Hom => \lam _ _ => \Sigma
@@ -20,53 +21,51 @@
     | (), (), (), () => (idp, idp)
   }
 
-\instance EmptyCat : Cat (Empty)
-  | Hom => \lam _ _ => Empty
-  | id => absurd
-  | o => \lam x => absurd x
-  | id-left => \lam x => absurd x
-  | id-right => \lam x => absurd x
-  | o-assoc => \lam x => absurd x
-  | univalence => \lam x => absurd x
+\func EmptyCat : Precat => Discrete 0
 
-\data Two | one | two
-
-\instance CatTwo : Cat Two
-  | Hom => \lam a b => \case \elim a, \elim b \with {
-    | one, one => \Sigma
-    | one, two => Empty
-    | two, one => Empty
-    | two, two => \Sigma
+\instance Discrete (n : Nat) : Precat (Fin n) \elim n {
+  | zero => \new Precat {
+    | Hom a b => Empty
+    | id x => \case \elim x \with { | () }
+    | o a b => absurd a
+    | id-left a => absurd a
+    | id-right a => absurd a
+    | o-assoc a => absurd a
   }
-  | id => \lam x => \case \elim x \with {
-    | one => ()
-    | two => ()
+  | suc n => \new Precat {
+    | Hom a b => \case \elim a, \elim b \with {
+      | fzero, fzero => \Sigma
+      | fzero, fsuc b => Empty
+      | fsuc a, fzero => Empty
+      | fsuc a, fsuc b => Hom {Discrete n} a b
+    }
+    | id x => \case \elim x \with {
+      | fzero => ()
+      | fsuc x => id x
+    }
+    | o {x} {y} {z} g f => \case \elim x, \elim y, \elim z, \elim g, \elim f \with {
+      | fzero, fzero, fzero, g, f => ()
+      | fzero, fsuc y, fzero, f, ()
+      | fsuc x, fzero, fzero, g, ()
+      | fsuc x, fsuc y, fsuc z, g, f => g `o` f
+    }
+    | id-left {x} {y} f => \case \elim x, \elim y, \elim f \with {
+      | fzero, fzero, f => idp
+      | fsuc x, fsuc y, f => id-left f
+    }
+    | id-right {x} {y} f => \case \elim x, \elim y, \elim f \with {
+      | fzero, fzero, f => idp
+      | fsuc x, fsuc y, f => id-right f
+    }
+    | o-assoc {x} {y} {z} {w} h g f => \case \elim x, \elim y, \elim z, \elim w, \elim f, \elim g, \elim h \with {
+      | fzero, fzero, fzero, fzero, f, g, h => idp
+      | fzero, fzero, fsuc z, fzero, (), g, h
+      | fzero, fsuc y, fzero, fzero, f, h, ()
+      | fzero, fsuc y, fsuc z, fzero, h, g, ()
+      | fsuc x, fzero, fzero, fzero, f, g, ()
+      | fsuc x, fzero, fsuc z, fzero, h, g, ()
+      | fsuc x, fsuc y, fzero, fzero, f, (), h
+      | fsuc x, fsuc y, fsuc z, fsuc w, f, g, h => o-assoc h g f
+    }
   }
-  | o {x} {y} {z} f g => \case \elim x, \elim y, \elim z, \elim f, \elim g \with {
-    | one, one, one, f, g => ()
-    | one, two, one, g, ()
-    | two, one, one, f, ()
-    | two, two, two, f, g => ()
-  }
-  | id-left {x} {y} f => \case \elim x, \elim y, \elim f \with {
-    | one, one, f => idp
-    | two, two, f => idp
-  }
-  | id-right {x} {y} f => \case \elim x, \elim y, \elim f \with {
-    | one, one, f => idp
-    | two, two, f => idp
-  }
-  | o-assoc {x} {y} {z} {w} h g f => \case \elim x, \elim y, \elim z, \elim w, \elim f, \elim g, \elim h \with {
-    | one, one, one, one, f, g, h => idp
-    | one, one, two, one, (), g, _
-    | one, two, one, one, f, h, ()
-    | one, two, two, one, h, g, ()
-    | two, one, one, one, f, g, ()
-    | two, one, two, one, h, g, ()
-    | two, two, one, one, f, (), _
-    | two, two, two, two, f, g, h => idp
-  }
-  | univalence {x} {y} f g p q => \case \elim x, \elim y, \elim f, \elim g, \elim p, \elim q \with {
-    | one, one, f, g, p, q => (idp, idp)
-    | two, two, f, g, p, q => (idp, idp)
-  }
+}

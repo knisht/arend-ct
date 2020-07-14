@@ -9,20 +9,21 @@
 \import Paths
 \import Playground
 \import Set.Category
+\import Set.Fin
 
 \func Terminal (C : Precat) : \Type => Limit {EmptyCat} (EmptyFunctor C)
 
 \func SetCatTerminal : Terminal SetCat => \new Limit {
   | cone => \new Cone {
     | apex => \Sigma
-    | edge => \lam x => absurd x
+    | edge => \lam x => fin0-absurd x
     | coherence => \lam {x} => \case x \with {
       | ()
     }
   }
   | factors-all (other : Cone) => \new ConesFactorization {
     | transit _ => ()
-    | commute => \lam x => absurd x
+    | commute => \lam x => fin0-absurd x
     | unique arrow f => funExt (\lam _ => \Sigma) arrow (\lam _ => ()) (\lam _ => idp)
   }
 }

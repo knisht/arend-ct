@@ -2,24 +2,29 @@
 \import Category.Functor
 \import Category.Instances
 \import Paths
+\import Set.Fin
 
-\func TwoFunctor (C : Precat) (x y : C) : Functor CatTwo C => \new Functor {
-  | map a => \case \elim a \with {
-    | one => x
-    | two => y
+\func TwoFunctor (C : Precat) (x y : C) : Functor (Discrete 2) C => \new Functor {
+  | map (a : Fin 2) => \case \elim a \with {
+    | fzero => x
+    | fsuc fzero => y
+    | fsuc (fsuc ())
   }
   | arrow-map {a} {b} f => \case \elim a, \elim b, \elim f \with {
-    | one, one, f => id x
-    | two, two, f => id y
+    | fzero, fzero, f => id x
+    | fsuc fzero, fsuc fzero, f => id y
+    | fsuc (fsuc ()), b, f
   }
   | functor-id a => \case \elim a \with {
-    | one => idp
-    | two => idp
+    | fzero => idp
+    | fsuc fzero => idp
+    | fsuc (fsuc ())
   }
   | functor-hom {a} {b} {c} f g => \case \elim a, \elim b, \elim c, \elim f, \elim g \with {
-    | one, one, one, f, g => inv (id-left (id x))
-    | one, two, one, g, ()
-    | two, one, one, (), _
-    | two, two, two, f, g => inv (id-left (id y))
+    | fzero, fzero, fzero, f, g => inv (id-left (id x))
+    | fzero, fsuc fzero, fzero, g, ()
+    | fsuc fzero, fzero, fzero, (), _
+    | fsuc fzero, fsuc fzero, fsuc fzero, f, g => inv (id-left (id y))
+    | fsuc (fsuc ()), b, c, f, g
   }
 }

@@ -7,6 +7,7 @@
 \import Aux.Paths
 \import Playground
 \import Set.Category
+\import Set.Fin
 
 \record Functor {X Y : \Type} (A : Precat X) (B : Precat Y) {
   | map : X -> Y
@@ -32,9 +33,9 @@
 }
 
 \func EmptyFunctor (D : Precat) : Functor EmptyCat D => \new Functor {
-  | map => absurd
+  | map => fin0-absurd
   | arrow-map => \lam x => absurd x
-  | functor-id => \lam x => absurd x
+  | functor-id => \lam x => fin0-absurd x
   | functor-hom => \lam x => absurd x
 }
 
