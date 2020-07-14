@@ -1,0 +1,27 @@
+\import Category
+\import Category.Functor
+\import Paths
+
+\class LargeCategory (Ob : \hType) {
+  | Hom : Ob -> Ob -> \oo-Type
+  | id (x : Ob) : Hom x x
+  | \fixr 8 o {x y z : Ob} : Hom y z -> Hom x y -> Hom x z
+  | id-left {x y : Ob} (f : Hom x y) : f `o` id x = f
+  | id-right {x y : Ob} (f : Hom x y) : id y `o` f = f
+  | o-assoc {x y z w : Ob} (f : Hom x y) (g : Hom y z) (h : Hom z w) : h `o` (g `o` f) = (h `o` g) `o` f
+
+  \func \infixl 8 >> {x y z : Ob} (f : Hom x y) (g : Hom y z) => g `o` f
+}
+
+\instance CAT : LargeCategory (Precat)
+  | Hom A B => Functor A B
+  | id x => Id x
+  | o {x : Precat} {y : Precat} {z : Precat} (g : Functor) (f : Functor) => \new Functor x z {
+    | map a => g.map (f.map a)
+    | arrow-map fx => g.arrow-map (f.arrow-map fx)
+    | functor-id a => pmap g.arrow-map (f.functor-id a) *> g.functor-id (f.map a)
+    | functor-hom a b => pmap g.arrow-map (f.functor-hom a b) *> g.functor-hom (f.arrow-map a) (f.arrow-map b)
+  }
+  | id-left f => idp
+  | id-right f => idp
+  | o-assoc f g h => idp
