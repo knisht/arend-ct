@@ -1,0 +1,175 @@
+\import Aux.Paths
+\import Category
+\import Category.Functor
+\import Category.Limits
+\import Logic
+\import Paths
+\import Set.Category
+
+\data Triple
+  | triple-a
+  | triple-b
+  | triple-c
+
+\instance Cospan : Precat Triple
+  | Hom a b => \case \elim a, \elim b \with {
+    | triple-a, triple-a => \Sigma
+    | triple-a, triple-b => Empty
+    | triple-a, triple-c => \Sigma
+    | triple-b, triple-a => Empty
+    | triple-b, triple-b => \Sigma
+    | triple-b, triple-c => \Sigma
+    | triple-c, triple-a => Empty
+    | triple-c, triple-b => Empty
+    | triple-c, triple-c => \Sigma
+  }
+  | id x => \case \elim x \with {
+    | triple-a => ()
+    | triple-b => ()
+    | triple-c => ()
+  }
+  | o {a} {b} {c} f g => \case \elim a, \elim b, \elim c, \elim f, \elim g \with {
+    | triple-a, triple-a, triple-a, f, g => ()
+    | triple-a, triple-a, triple-c, f, g => ()
+    | triple-a, triple-b, triple-a, g, ()
+    | triple-a, triple-c, triple-c, f, g => ()
+    | triple-b, triple-a, triple-a, f, ()
+    | triple-b, triple-b, triple-b, f, g => ()
+    | triple-b, triple-b, triple-c, f, g => ()
+    | triple-b, triple-c, triple-c, f, g => ()
+    | triple-c, triple-a, triple-a, f, ()
+    | triple-c, triple-b, triple-a, g, ()
+    | triple-c, triple-c, triple-a, (), g
+    | triple-c, triple-c, triple-c, f, g => ()
+  }
+  | id-left {x} {y} f => \case \elim x, \elim y, \elim f \with {
+    | triple-a, triple-a, f => idp
+    | triple-a, triple-c, f => idp
+    | triple-b, triple-b, f => idp
+    | triple-b, triple-c, f => idp
+    | triple-c, triple-c, f => idp
+  }
+  | id-right {x} {y} f => \case \elim x, \elim y, \elim f \with {
+    | triple-a, triple-a, f => idp
+    | triple-a, triple-c, f => idp
+    | triple-b, triple-b, f => idp
+    | triple-b, triple-c, f => idp
+    | triple-c, triple-c, f => idp
+  }
+  | o-assoc {x} {y} {z} {w} f g h => \case \elim x, \elim y, \elim z, \elim w, \elim f, \elim g, \elim h \with {
+    | triple-a, triple-a, triple-a, triple-a, f, g, h => idp
+    | triple-a, triple-a, triple-a, triple-c, f, g, h => idp
+    | triple-a, triple-a, triple-b, triple-a, f, h, ()
+    | triple-a, triple-a, triple-c, triple-c, f, g, h => idp
+    | triple-a, triple-b, triple-a, triple-a, (), g, _
+    | triple-a, triple-b, triple-b, triple-a, h, g, ()
+    | triple-a, triple-b, triple-c, triple-a, h, g, ()
+    | triple-a, triple-c, triple-a, triple-a, f, (), h
+    | triple-a, triple-c, triple-b, triple-a, f, h, ()
+    | triple-a, triple-c, triple-c, triple-c, f, g, h => idp
+    | triple-b, triple-a, triple-a, triple-a, (), g, h
+    | triple-b, triple-a, triple-a, triple-b, (), g, h
+    | triple-b, triple-a, triple-a, triple-c, (), g, h
+    | triple-b, triple-a, triple-b, w, (), g, h
+    | triple-b, triple-a, triple-c, w, (), g, h
+    | triple-b, triple-b, triple-a, w, f, (), h
+    | triple-b, triple-b, triple-b, triple-a, f, g, ()
+    | triple-b, triple-b, triple-b, triple-b, f, g, h => idp
+    | triple-b, triple-b, triple-b, triple-c, f, g, h => idp
+    | triple-b, triple-b, triple-c, triple-a, f, g, ()
+    | triple-b, triple-b, triple-c, triple-b, f, g, ()
+    | triple-b, triple-b, triple-c, triple-c, f, g, h => idp
+    | triple-b, triple-c, triple-a, w, f, (), h
+    | triple-b, triple-c, triple-b, w, f, (), h
+    | triple-b, triple-c, triple-c, triple-a, f, g, ()
+    | triple-b, triple-c, triple-c, triple-b, f, g, ()
+    | triple-b, triple-c, triple-c, triple-c, f, g, h => idp
+    | triple-c, triple-a, z, w, (), g, h
+    | triple-c, triple-b, z, w, (), g, h
+    | triple-c, triple-c, triple-a, w, f, (), h
+    | triple-c, triple-c, triple-b, w, f, (), h
+    | triple-c, triple-c, triple-c, triple-a, f, g, ()
+    | triple-c, triple-c, triple-c, triple-b, f, g, ()
+    | triple-c, triple-c, triple-c, triple-c, f, g, h => idp
+  }
+
+\func PullbackDiagram {C : Precat} (a b c : C) (ac : Hom a c) (bc : Hom b c) : Functor Cospan C => \new Functor {
+  | map x => \case \elim x \with {
+    | triple-a => a
+    | triple-b => b
+    | triple-c => c
+  }
+  | arrow-map {a} {b} f => \case \elim a, \elim b, \elim f \with {
+    | triple-a, triple-a, f => id a
+    | triple-a, triple-c, f => ac
+    | triple-b, triple-b, f => id b
+    | triple-b, triple-c, f => bc
+    | triple-c, triple-c, f => id c
+  }
+  | functor-id a => \case \elim a \with {
+    | triple-a => idp
+    | triple-b => idp
+    | triple-c => idp
+  }
+  | functor-hom {a1} {b1} {c1} f g => \case \elim a1, \elim b1, \elim c1, \elim f, \elim g \with {
+    | triple-a, triple-a, triple-a, f, g => inv (id-left (id a))
+    | triple-a, triple-a, triple-c, f, g => inv (id-left ac)
+    | triple-a, triple-b, triple-a, g, ()
+    | triple-a, triple-c, triple-c, f, g => inv (id-right ac)
+    | triple-b, triple-a, triple-a, (), g
+    | triple-b, triple-b, triple-b, f, g => inv (id-left (id b))
+    | triple-b, triple-b, triple-c, f, g => inv (id-left bc)
+    | triple-b, triple-c, triple-c, f, g => inv (id-right bc)
+    | triple-c, triple-a, triple-a, (), g
+    | triple-c, triple-b, triple-a, g, ()
+    | triple-c, triple-c, triple-a, f, ()
+    | triple-c, triple-c, triple-c, f, g => inv (id-left (id c))
+  }
+}
+
+\func Pullback {C : Precat} (a b c : C) (ac : Hom a c) (bc : Hom b c) : \Type =>
+  Limit {Cospan} (PullbackDiagram a b c ac bc)
+
+\record PullbackCarrier (A B C : \Set) (ac : A -> C) (bc : B -> C)
+  | pr1 : A
+  | pr2 : B
+  | eq : ac pr1 = bc pr2
+
+\func SetPullback (a b c : SetCat) (ac : a -> c) (bc : b -> c) : Pullback {SetCat} a b c ac bc => \new Limit {
+  | cone => \new Cone {
+    | apex => PullbackCarrier a b c ac bc
+    | edge x (p : PullbackCarrier) => \case \elim x \with {
+      | triple-a => p.pr1
+      | triple-b => p.pr2
+      | triple-c => p.ac p.pr1
+    }
+    | coherence {a1} {b1} f => \case \elim a1, \elim b1, \elim f \with {
+      | triple-a, triple-a, f => idp
+      | triple-a, triple-c, f => idp
+      | triple-b, triple-b, f => idp
+      | triple-b, triple-c, f => path (\lam i (p : PullbackCarrier) => p.eq @ i)
+      | triple-c, triple-c, f => idp
+    }
+  }
+  | factors-all (other : Cone) => \new ConesFactorization {
+    | transit ap => \new PullbackCarrier {
+      | pr1 => other.edge triple-a ap
+      | pr2 => other.edge triple-b ap
+      | eq => pmap (__ ap) (inv (other.coherence {triple-a} {triple-c} ()) *> other.coherence {triple-b} {triple-c} ())
+    }
+    | commute x => \case \elim x \with {
+      | triple-a => idp
+      | triple-b => idp
+      | triple-c => other.coherence {triple-a} {triple-c} ()
+    }
+    | unique arrow univ => funExt (\lam _ => PullbackCarrier a b c ac bc) arrow (\lam ap => \new PullbackCarrier a b c ac bc {
+      | pr1 => other.edge triple-a ap
+      | pr2 => other.edge triple-b ap
+      | eq => pmap (\lam p0 => p0 ap) (inv (other.coherence {triple-a} {triple-c} ()) *> other.coherence ())
+    }) (\lam x => path (\lam i => \new PullbackCarrier {
+      | pr1 => (inv (univ triple-a) @ i) x
+      | pr2 => (inv (univ triple-b) @ i) x
+      | eq => coe (\lam j => ac ((@) (inv (univ triple-a)) j x) = bc ((@) (inv (univ triple-b)) j x)) (\let k : PullbackCarrier => arrow x \in k.eq) i
+    }))
+  }
+}
