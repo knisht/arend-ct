@@ -1,0 +1,129 @@
+\import Aux.Paths
+\import Category
+\import Category.Functor
+\import Category.Limits
+\import Logic
+\import Paths
+\import Set.Category
+
+\data Two
+  | two-a
+  | two-b
+
+\instance ParallelMorphisms : Precat Two
+  | Hom a b => \case \elim a, \elim b \with {
+    | two-a, two-a => \Sigma
+    | two-a, two-b => Two
+    | two-b, two-a => Empty
+    | two-b, two-b => \Sigma
+  }
+  | id x => \case \elim x \with {
+    | two-a => ()
+    | two-b => ()
+  }
+  | o {x} {y} {z} f g => \case \elim x, \elim y, \elim z, \elim f, \elim g \with {
+    | two-a, two-a, two-a, f, g => ()
+    | two-a, two-a, two-b, two-a, g => two-a
+    | two-a, two-a, two-b, two-b, g => two-b
+    | two-a, two-b, two-b, f, two-a => two-a
+    | two-a, two-b, two-b, f, two-b => two-b
+    | two-b, two-a, two-b, two-a, ()
+    | two-b, two-b, two-b, f, g => ()
+  }
+  | id-left {x} {y} f => \case \elim x, \elim y, \elim f \with {
+    | two-a, two-a, f => idp
+    | two-a, two-b, two-a => idp
+    | two-a, two-b, two-b => idp
+    | two-b, two-b, f => idp
+  }
+  | id-right {x} {y} f => \case \elim x, \elim y, \elim f \with {
+    | two-a, two-a, f => idp
+    | two-a, two-b, two-a => idp
+    | two-a, two-b, two-b => idp
+    | two-b, two-b, f => idp
+  }
+  | o-assoc {x} {y} {z} {w} f g h => \case \elim x, \elim y, \elim z, \elim w, \elim f, \elim g, \elim h \with {
+    | two-a, two-a, two-a, two-a, f, g, h => idp
+    | two-a, two-a, two-a, two-b, f, g, two-a => idp
+    | two-a, two-a, two-a, two-b, f, g, two-b => idp
+    | two-a, two-a, two-b, two-a, f, two-a, ()
+    | two-a, two-a, two-b, two-b, f, two-a, h => idp
+    | two-a, two-a, two-b, two-b, f, two-b, h => idp
+    | two-a, two-b, two-a, two-a, two-a, (), h
+    | two-a, two-b, two-a, two-b, two-a, (), h
+    | two-a, two-b, two-b, two-a, two-a, g, ()
+    | two-a, two-b, two-b, two-b, two-a, g, h => idp
+    | two-b, two-a, two-a, two-a, f, g, h => idp
+    | two-b, two-a, two-a, two-b, (), g, h
+    | two-b, two-a, two-b, w, (), g, h
+    | two-b, two-b, two-a, w, f, (), h
+    | two-b, two-b, two-b, two-a, f, g, ()
+    | two-b, two-b, two-b, two-b, f, g, h => idp
+    | two-a, two-b, two-b, two-b, two-b, g, h => idp
+  }
+
+\func ParallelFunctor {C : Precat} {a b : C} (f g : Hom a b) : Functor ParallelMorphisms C => \new Functor {
+  | map x => \case \elim x \with {
+    | two-a => a
+    | two-b => b
+  }
+  | arrow-map {a1} {b1} f => \case \elim a1, \elim b1, \elim f \with {
+    | two-a, two-a, f1 => id a
+    | two-a, two-b, two-a => f
+    | two-a, two-b, two-b => g
+    | two-b, two-b, f1 => id b
+  }
+  | functor-id x => \case \elim x \with {
+    | two-a => idp
+    | two-b => idp
+  }
+  | functor-hom {x} {y} {z} f' g' => \case \elim x, \elim y, \elim z, \elim f', \elim g' \with {
+    | two-a, two-a, two-a, f', g' => inv (id-left (id a))
+    | two-a, two-a, two-b, f', two-a => inv (id-left f)
+    | two-a, two-a, two-b, f', two-b => inv (id-left g)
+    | two-a, two-b, two-a, two-a, ()
+    | two-a, two-b, two-b, two-a, g' => inv (id-right f)
+    | two-a, two-b, two-b, two-b, g' => inv (id-right g)
+    | two-b, two-a, two-a, (), g'
+    | two-b, two-b, two-b, f', g' => inv (id-left (id b))
+  }
+}
+
+\func Equalizer (C : Precat) (a b : C) (f g : Hom a b) : \Type => Limit {ParallelMorphisms} (ParallelFunctor f g)
+
+\record EqualizerCarrier (A B : \Set) (f g : A -> B)
+  | a : A
+  | constraint : f a = g a
+
+\func SetEqualizer (A B : \Set) (f g : A -> B) : Equalizer SetCat A B f g => \new Limit {
+  | cone => \new Cone {
+    | apex => EqualizerCarrier A B f g
+    | edge x (car : EqualizerCarrier) => \case \elim x \with {
+      | two-a => car.a
+      | two-b => car.f (car.a)
+    }
+    | coherence {a1} {b1} f1 => \case \elim a1, \elim b1, \elim f1 \with {
+      | two-a, two-a, f1 => idp
+      | two-a, two-b, two-a => idp
+      | two-a, two-b, two-b => path (\lam i (car : EqualizerCarrier) => car.constraint @ i)
+      | two-b, two-b, f1 => idp
+    }
+  }
+  | factors-all (other : Cone) => \new ConesFactorization {
+    | transit ap => \new EqualizerCarrier {
+      | a => other.edge two-a ap
+      | constraint => pmap (__ ap) (inv (other.coherence {two-a} {two-b} two-a) *> other.coherence {two-a} {two-b} two-b)
+    }
+    | commute x => \case \elim x \with {
+      | two-a => idp
+      | two-b => other.coherence {two-a} {two-b} two-a
+    }
+    | unique arrow comm => funExt (\lam _ => EqualizerCarrier A B f g) arrow (\lam ap => \new EqualizerCarrier A B f g {
+      | a => other.edge two-a ap
+      | constraint => pmap (\lam p0 => p0 ap) (inv (other.coherence {_} {two-b} two-a) *> other.coherence {_} {two-b} two-b)
+    }) (\lam x => path (\lam i => \new EqualizerCarrier {
+      | a => pmap (__ x) (inv (comm two-a)) @ i
+      | constraint => coe (\lam j => f ((@) (inv (comm two-a)) j x) = g ((@) (inv (comm two-a)) j x)) (\let k : EqualizerCarrier => arrow x \in k.constraint) i
+    }))
+  }
+}
