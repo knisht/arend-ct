@@ -1,4 +1,5 @@
 \import Category
+\import Category.Colimits
 \import Category.Functor
 \import Logic
 \import Paths
@@ -13,13 +14,20 @@
   | coherence {a b : J} (f : Hom a b) : edge b `factoredBy (edge a) (D.arrow-map f)
 }
 
+-- | Generates a cocone in the opposite category
+\func invert-cone {J C : Precat} (D : Diagram J C) (c : Cone D) : Cocone {op J} {op C} (f-inv D) => \new Cocone {
+  | apex => c.apex
+  | edge x => c.edge x
+  | coherence f => c.coherence f
+}
+
 \record ConesFactorization {J C : Precat} (D : Diagram J C) (L U : Cone D) {
   | transit : Hom L.apex U.apex
   | commute : \Pi (x : J) -> L.edge x `factoredBy transit (U.edge x)
-  | unique : \Pi (arrow : Hom L.apex U.apex) -> (\Pi (x : J) -> L.edge x `factoredBy arrow  (U.edge x)) -> arrow = transit
+  | unique : \Pi (arrow : Hom L.apex U.apex) -> (\Pi (x : J) -> L.edge x `factoredBy arrow (U.edge x)) -> arrow = transit
 }
 
-\func \fix 1 factoredBy {C : Precat} {a b c : C} (l : Hom a c)  (arrow : Hom a b) (r : Hom b c) : \Type =>
+\func \fix 1 factoredBy {C : Precat} {a b c : C} (l : Hom a c) (arrow : Hom a b) (r : Hom b c) : \Type =>
   l = r `o` arrow
 
 \class Limit {J C : Precat} (D : Diagram J C) {

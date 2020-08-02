@@ -27,6 +27,14 @@
   | functor-hom f g => rewrite (F.functor-hom f g) (G.functor-hom (F.arrow-map f) (F.arrow-map g))
 }
 
+-- | Corresponding functor between opposite categories
+\func f-inv {A B : Precat} (F : Functor A B) : Functor (op A) (op B) => \new Functor {
+  | map => F.map
+  | arrow-map f => F.arrow-map f
+  | functor-id => F.functor-id
+  | functor-hom f g => F.functor-hom g f
+}
+
 \func EndoFunctor {X : \Type} (A : Precat X) : \Type => Functor A A
 
 \func Id {X : \Type} (A : Precat X) : EndoFunctor A => \new Functor {

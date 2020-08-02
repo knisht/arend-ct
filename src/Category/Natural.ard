@@ -14,6 +14,7 @@
   | naturality {x} {y} f => rewrite (id-right (F.arrow-map f)) (rewrite (id-left (F.arrow-map f)) idp)
 }
 
+-- | Vertical composition of natural transformation. Forms a category of functors.
 \func \infix 3 _^ {A B : Precat} {F G H : Functor A B} (V : NaturalTransformation {_} {_} {A} {B} G H) (U : NaturalTransformation {_} {_} {A} {B} F G)  : NaturalTransformation F H =>
   \new NaturalTransformation {_} {_} {A} {B} F H {
     | component x => V.component x `o` U.component x
@@ -25,6 +26,7 @@
       rewriteI (o-assoc-rev (H.arrow-map f) (V.component x) (U.component x)) idp
   }
 
+-- | Horisontal composition of natural transformations.
 \func \infix 3 _> {A B C : Precat} {F G : Functor A B} {H K : Functor B C}
                   (n : NaturalTransformation {_} {_} {A} {B} F G)
                   (m : NaturalTransformation {_} {_} {B} {C} H K)

@@ -1,0 +1,72 @@
+\import Category
+\import Category.Functor
+\import Category.Limits
+\import Equiv (QEquiv)
+\import Equiv.Univalence (QEquiv-to-=)
+
+{- | The definition of a cocone over some diagram
+
+ - Exists for convenience, duality theorem below eliminates difference with limit
+ -}
+\record Cocone {J C : Precat} (D : Diagram J C) {
+  | apex : C
+  | edge : \Pi (x : J) -> C.Hom (D.map x) apex
+  | coherence {a b : J} (f : Hom a b) : edge a `factoredBy (D.arrow-map f) (edge b)
+}
+
+-- | Produces a cone in the opposite category
+\func invert-cocone {J C : Precat} (D : Diagram J C) (c : Cocone D) : Cone {op J} {op C} (f-inv D) => \new Cone {
+  | apex => c.apex
+  | edge x => c.edge x
+  | coherence f => c.coherence f
+}
+
+{- | Definition of cones factorization.
+ - `U` is more universal cocone than `L`
+ -}
+\record CoconesFactorization {J C : Precat} (D : Diagram J C) (L U : Cocone D) {
+  | transit : Hom U.apex L.apex
+  | commute : \Pi (x : J) -> L.edge x `factoredBy (U.edge x) transit
+  | unique : \Pi (arrow : Hom U.apex L.apex) -> (\Pi (x : J) -> L.edge x `factoredBy (U.edge x) arrow) -> arrow = transit
+}
+
+-- | The colimit over diagram `D`
+\class Colimit {J C : Precat} (D : Diagram J C) {
+  | cocone : Cocone D
+  | factors-all : \Pi (other : Cocone D) -> CoconesFactorization D other cocone
+}
+
+-- | Every limit has its dual colimit in the opposite category
+\func limit-duality {J C : Precat} :
+  (\Sigma (D : Diagram J C) (Limit D)) = (\Sigma (D' : Diagram (op J) (op C)) (Colimit {op J} {op C} D')) =>
+  QEquiv-to-= (\new QEquiv {\Sigma (D : Diagram J C) (Limit D)} {\Sigma (D' : Diagram (op J) (op C)) (Colimit {op J} {op C} D')} {
+    | f x => \let | D : Diagram J C => x.1
+                  | lim : Limit D => x.2
+                  | D' : Diagram (op J) (op C) => f-inv x.1
+                  | colim : Colimit {op J} {op C} D' => \new Colimit {
+             | cocone => invert-cone {J} {C} D lim.cone
+             | factors-all (other : Cocone {op J} {op C} D') =>
+               \let r : ConesFactorization => lim.factors-all (invert-cocone {op J} {op C} D' other) \in
+                 \new CoconesFactorization {
+                   | transit => r.transit
+                   | commute => r.commute
+                   | unique => r.unique
+                 }
+           } \in (D', colim)
+    | ret x => \let | D' : Diagram (op J) (op C) => x.1
+                    | colim : Colimit {op J} {op C} D' => x.2
+                    | D : Diagram J C => f-inv {op J} {op C} D'
+                    | lim : Limit D => \new Limit {
+                      | cone => invert-cocone {op J} {op C} D' colim.cocone
+                      | factors-all (other : Cone D) =>
+                        \let r : CoconesFactorization => colim.factors-all (invert-cone D other) \in
+                          \new ConesFactorization {
+                            | transit => r.transit
+                            | commute => r.commute
+                            | unique => r.unique
+                          }
+                    } \in (D, lim)
+    | ret_f x => idp
+    | f_sec x => idp
+  })
+
