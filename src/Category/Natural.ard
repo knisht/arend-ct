@@ -1,0 +1,44 @@
+\import Category
+\import Category.Functor
+\import Function.Meta
+\import Category.Functor
+\import Paths.Meta
+
+\record NaturalTransformation {X Y : \Type} {A : Precat X} {B : Precat Y} (F G : Functor A B) {
+  | component (x : X) : B.Hom (F.map x) (G.map x)
+  | naturality {x y : X} (f : Hom x y) : component y `o` F.arrow-map f = G.arrow-map f `o` component x
+}
+
+\func NatId {X Y : Precat} (F : Functor X Y) : NaturalTransformation F F => \new NaturalTransformation {
+  | component x => Y.id (F.map x)
+  | naturality {x} {y} f => rewrite (id-right (F.arrow-map f)) (rewrite (id-left (F.arrow-map f)) idp)
+}
+
+\func \infix 3 _^ {A B : Precat} {F G H : Functor A B} (V : NaturalTransformation {_} {_} {A} {B} G H) (U : NaturalTransformation {_} {_} {A} {B} F G)  : NaturalTransformation F H =>
+  \new NaturalTransformation {_} {_} {A} {B} F H {
+    | component x => V.component x `o` U.component x
+    | naturality {x} {y} f =>
+      rewriteI (o-assoc-rev (V.component y) (U.component y) (F.arrow-map f)) $
+      rewrite (naturality {U} f) $
+      rewrite (o-assoc-rev (V.component y) (G.arrow-map f) (U.component x)) $
+      rewrite (V.naturality f) $
+      rewriteI (o-assoc-rev (H.arrow-map f) (V.component x) (U.component x)) idp
+  }
+
+\func \infix 3 _> {A B C : Precat} {F G : Functor A B} {H K : Functor B C}
+                  (n : NaturalTransformation {_} {_} {A} {B} F G)
+                  (m : NaturalTransformation {_} {_} {B} {C} H K)
+  : NaturalTransformation (H `f-o` F) (K `f-o` G) =>
+  \new NaturalTransformation {
+    | component x => m.component (G.map x) `o` H.arrow-map (n.component x)
+    | naturality {x} {y} f =>
+      rewriteI o-assoc-rev $
+      rewriteI (H.functor-hom (F.arrow-map f) (n.component y)) $
+      rewrite m.naturality $
+      rewrite K.functor-hom $
+      rewrite m.naturality $
+      rewriteI K.functor-hom $
+      rewrite n.naturality $
+      rewrite K.functor-hom $
+      rewriteI o-assoc idp
+  }
