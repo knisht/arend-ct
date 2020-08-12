@@ -48,8 +48,10 @@
       rewriteI o-assoc idp
   }
 
-{- | The law of natural extensionality.
- - If some natural transformations agree at components, then they are equal
+{- | The law of natural transformation extensionality.
+ - If some natural transformations agree at components, then they are equal.
+ -
+ - Similar to function extensionality
  -}
 \func natExt {A B : Precat} {F G : Functor A B}
              (mu eta : NaturalTransformation {_} {_} {A} {B} F G)

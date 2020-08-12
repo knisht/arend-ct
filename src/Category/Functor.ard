@@ -68,37 +68,13 @@
 \func o-assoc-rev {X : \Type} {C : Precat X} {a b c d : X} (h : Hom c d)  (g : Hom b c) (f : Hom a b) : h `o` (g `o` f) = (h `o` g) `o` f =>
   C.o-assoc f g h
 
+{- | Category of functors between selected two categories
+ -}
 \instance FunctorCategory {X Y : \Type} (A : Precat X) (B : Precat Y) : Precat (Functor A B)
   | Hom F G => NaturalTransformation F G
   | id (F : Functor A B) => NatId F
   | o (nat1 : NaturalTransformation) (nat2 : NaturalTransformation) => nat1 _^ nat2
-  | id-left {F : Functor} {G : Functor} (f : NaturalTransformation) => path (\lam i => \new NaturalTransformation {
-    | component x => id-left (f.component x) @ i
-    | naturality {x} {y} mor =>
-      coeR (\lam j => id-left (f.component y) @ j `o` F.arrow-map mor = G.arrow-map mor `o` id-left (f.component x) @ j)
-           (f.naturality mor) i
-  })
-  | id-right {F : Functor} {G : Functor} (f : NaturalTransformation) => path (\lam i => \new NaturalTransformation {
-    | component x => id-right (f.component x) @ i
-    | naturality {x} {y} mor =>
-      coeR (\lam j => id-right (f.component y) @ j `o` F.arrow-map mor = G.arrow-map mor `o` id-right (f.component x) @ j)
-           (f.naturality mor) i
-  })
-  | o-assoc {F G H W : Functor A B} (nat-fg : NaturalTransformation F G) (nat-gh : NaturalTransformation G H) (nat-hw : NaturalTransformation H W) => path (\lam i => \new NaturalTransformation F W {
-    | component x => B.o-assoc (nat-fg.component x) (nat-gh.component x) (nat-hw.component x) @ i
-    | naturality {x} {y} f =>
-      coe (\lam j => (B.o-assoc (nat-fg.component y) (nat-gh.component y) (nat-hw.component y) @ j) `o` (F.arrow-map f) = (W.arrow-map f) `o` (B.o-assoc (nat-fg.component x) (nat-gh.component x) (nat-hw.component x) @ j))
-          ((nat-hw.component y `o` (nat-gh.component y `o` nat-fg.component y)) `o` F.arrow-map f ==< inv (o-assoc-rev (component y) (component y `o` component y) (F.arrow-map f))        >==
-          nat-hw.component y `o` ((nat-gh.component y `o` nat-fg.component y) `o` F.arrow-map f)  ==< pmap (component y `o`) (inv (o-assoc-rev (component y) (component y) (arrow-map f))) >==
-          nat-hw.component y `o` (nat-gh.component y `o` (nat-fg.component y `o` F.arrow-map f))  ==< pmap (component y `o` (component y `o` __)) (naturality f)                           >==
-          nat-hw.component y `o` (nat-gh.component y `o` (G.arrow-map f `o` nat-fg.component x))  ==< pmap (component y `o`) (o-assoc-rev (component y) (G.arrow-map f) (component x))     >==
-          nat-hw.component y `o` ((nat-gh.component y `o` G.arrow-map f) `o` nat-fg.component x)  ==< pmap (component y `o` (__ `o` component x)) (naturality f)                           >==
-          nat-hw.component y `o` ((H.arrow-map f `o` nat-gh.component x) `o` nat-fg.component x)  ==< o-assoc-rev (component y) (H.arrow-map f `o` component x) (component x)              >==
-          (nat-hw.component y `o` (H.arrow-map f `o` nat-gh.component x)) `o` nat-fg.component x  ==< pmap (`o` component x) (o-assoc-rev (component y) (H.arrow-map f) (component x))     >==
-          ((nat-hw.component y `o` H.arrow-map f) `o` nat-gh.component x) `o` nat-fg.component x  ==< pmap ((__ `o` component x)`o` component x) (naturality f)                            >==
-          ((W.arrow-map f `o` nat-hw.component x) `o` nat-gh.component x) `o` nat-fg.component x  ==< pmap (`o` component x) (inv (o-assoc-rev (arrow-map f) (component x) (component x))) >==
-          (W.arrow-map f `o` (nat-hw.component x `o` nat-gh.component x)) `o` nat-fg.component x  ==< inv (o-assoc-rev (arrow-map f) (component x `o` component x) (component x))          >==
-          W.arrow-map f `o` ((nat-hw.component x `o` nat-gh.component x) `o` nat-fg.component x)  ==< pmap (arrow-map f `o`) (inv (o-assoc-rev (component x) (component x) (component x))) >==
-          W.arrow-map f `o` (nat-hw.component x `o` (nat-gh.component x `o` nat-fg.component x))  `qed)
-          i
-  })
+  | id-left {F : Functor} {G : Functor} (f : NaturalTransformation) => natExt (f _^ NatId F) f (\lam x => id-left (f.component x))
+  | id-right {F : Functor} {G : Functor} (f : NaturalTransformation) => natExt (NatId G _^ f) f (\lam x => id-right (f.component x))
+  | o-assoc (nat-fg : NaturalTransformation) (nat-gh : NaturalTransformation) (nat-hw : NaturalTransformation) =>
+    natExt (nat-hw _^ (nat-gh _^ nat-fg)) ((nat-hw _^ nat-gh) _^ nat-fg) (\lam x => B.o-assoc (nat-fg.component x) (nat-gh.component x) (nat-hw.component x))
