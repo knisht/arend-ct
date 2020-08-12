@@ -1,6 +1,7 @@
 \import Aux.Paths
 \import Category.Functor
 \import Category
+\import Category.Natural
 \import Equiv (QEquiv)
 \import Paths
 \import Set.Category

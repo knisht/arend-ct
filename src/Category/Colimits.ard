@@ -21,7 +21,7 @@
   | coherence f => c.coherence f
 }
 
-{- | Definition of cones factorization.
+{- | Definition of cocones factorization.
  - `U` is more universal cocone than `L`
  -}
 \record CoconesFactorization {J C : Precat} (D : Diagram J C) (L U : Cocone D) {
@@ -44,15 +44,15 @@
                   | lim : Limit D => x.2
                   | D' : Diagram (op J) (op C) => f-inv x.1
                   | colim : Colimit {op J} {op C} D' => \new Colimit {
-             | cocone => invert-cone {J} {C} D lim.cone
-             | factors-all (other : Cocone {op J} {op C} D') =>
-               \let r : ConesFactorization => lim.factors-all (invert-cocone {op J} {op C} D' other) \in
-                 \new CoconesFactorization {
-                   | transit => r.transit
-                   | commute => r.commute
-                   | unique => r.unique
-                 }
-           } \in (D', colim)
+                    | cocone => invert-cone {J} {C} D lim.cone
+                    | factors-all (other : Cocone {op J} {op C} D') =>
+                      \let r : ConesFactorization => lim.factors-all (invert-cocone {op J} {op C} D' other) \in
+                        \new CoconesFactorization {
+                          | transit => r.transit
+                          | commute => r.commute
+                          | unique => r.unique
+                        }
+                  } \in (D', colim)
     | ret x => \let | D' : Diagram (op J) (op C) => x.1
                     | colim : Colimit {op J} {op C} D' => x.2
                     | D : Diagram J C => f-inv {op J} {op C} D'

@@ -15,7 +15,10 @@
 }
 
 -- | Vertical composition of natural transformation. Forms a category of functors.
-\func \infix 3 _^ {A B : Precat} {F G H : Functor A B} (V : NaturalTransformation {_} {_} {A} {B} G H) (U : NaturalTransformation {_} {_} {A} {B} F G)  : NaturalTransformation F H =>
+\func \infix 3 _^ {A B : Precat} {F G H : Functor A B}
+                  (V : NaturalTransformation {_} {_} {A} {B} G H)
+                  (U : NaturalTransformation {_} {_} {A} {B} F G)
+  : NaturalTransformation F H =>
   \new NaturalTransformation {_} {_} {A} {B} F H {
     | component x => V.component x `o` U.component x
     | naturality {x} {y} f =>
@@ -44,3 +47,15 @@
       rewrite K.functor-hom $
       rewriteI o-assoc idp
   }
+
+{- | The law of natural extensionality.
+ - If some natural transformations agree at components, then they are equal
+ -}
+\func natExt {A B : Precat} {F G : Functor A B}
+             (mu eta : NaturalTransformation {_} {_} {A} {B} F G)
+             (comp-equiv : \Pi (x : A) -> mu.component x = eta.component x)
+             : mu = eta
+  => path (\lam i => \new NaturalTransformation F G {
+    | component x => comp-equiv x @ i
+    | naturality {x} {y} f => coe (\lam j => B.o (comp-equiv y @ j) (F.arrow-map f) = B.o (G.arrow-map f) (comp-equiv x @ j)) (mu.naturality f) i
+  })
